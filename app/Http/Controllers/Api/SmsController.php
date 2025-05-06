@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -26,6 +27,13 @@ class SmsController extends Controller
             ->post($user->sms_gateway_url, [
                 'message' => $request->message,
                 'phoneNumbers' => $request->phoneNumbers,
+            ]);
+
+            Sms::create([
+                'user_id' => $user->id,
+                'phone_number' => $request->phoneNumbers,
+                'message' => $request->message,
+                'response' => $response->json(),
             ]);
 
         return response()->json([

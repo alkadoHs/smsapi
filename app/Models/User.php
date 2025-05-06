@@ -61,4 +61,22 @@ class User extends Authenticatable
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
+
+    public function sms()
+    {
+        return $this->hasMany(Sms::class);
+    }
+    
+    public function sendSms(string $phoneNumber, string $message): Sms
+    {
+        $sms = new Sms([
+            'phone_number' => $phoneNumber,
+            'message' => $message,
+            'status' => 'pending',
+        ]);
+
+        $this->sms()->save($sms);
+
+        return $sms;
+    }
 }
