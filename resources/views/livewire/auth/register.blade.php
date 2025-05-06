@@ -11,6 +11,9 @@ use Livewire\Volt\Component;
 new #[Layout('components.layouts.auth')] class extends Component {
     public string $name = '';
     public string $email = '';
+    public string $sms_gateway_username = '';
+    public string $sms_gateway_password = '';
+    public string $sms_gateway_url = '';
     public string $password = '';
     public string $password_confirmation = '';
 
@@ -22,14 +25,24 @@ new #[Layout('components.layouts.auth')] class extends Component {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'sms_gateway_username' => ['required', 'string', 'max:255', 'unique:' . User::class],
+            'sms_gateway_password' => ['required', 'string', 'max:255', 'unique:' . User::class],
+            'sms_gateway_url' => ['required', 'string', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
-        event(new Registered(($user = User::create($validated))));
+        $user = User::create($validated);
+
+        event(new Registered($user));
+
+        $token = $user->createToken('sms-token')->plainTextToken;
 
         Auth::login($user);
+
+        // Store the token in the session
+        session()->put('sms_token', $token);
 
         $this->redirectIntended(route('dashboard', absolute: false), navigate: true);
     }
@@ -81,6 +94,36 @@ new #[Layout('components.layouts.auth')] class extends Component {
             required
             autocomplete="new-password"
             :placeholder="__('Confirm password')"
+        />
+
+        <!-- sms_gateway_username -->
+        <flux:input
+            wire:model="sms_gateway_username"
+            :label="__('SMS Gateway Username')"
+            type="text"
+            required
+            autocomplete="sms_gateway_username"
+            :placeholder="__('SMS Gateway Username')"
+        />
+
+        <!-- sms_gateway_password -->
+        <flux:input
+            wire:model="sms_gateway_password"
+            :label="__('SMS Gateway Password')"
+            type="password"
+            required
+            autocomplete="sms_gateway_password"
+            :placeholder="__('SMS Gateway Password')"
+        />
+
+        <!-- sms_gateway_url -->
+        <flux:input
+            wire:model="sms_gateway_url"
+            :label="__('SMS Gateway URL')"
+            type="text"
+            required
+            autocomplete="sms_gateway_url"
+            :placeholder="__('SMS Gateway URL')"
         />
 
         <div class="flex items-center justify-end">
