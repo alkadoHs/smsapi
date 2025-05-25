@@ -42,13 +42,5 @@ class SendSmsJob implements ShouldQueue
             'response' => json_encode($response->json()),
         ]);
 
-        Http::withBasicAuth(getenv('SMS_USERNAME'), getenv('SMS_PASS'))
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-            ])
-            ->post($this->user->sms_gateway_url, [
-                'message' => "SMS SENT!",
-                'phoneNumbers' => [getenv('PHONE')],
-            ]);
     }
 }
